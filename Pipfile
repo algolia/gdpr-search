@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 scrapy = "*"
-django = "==1.11"
+django = "==1.11.23"
 postgres = "*"
 django-parler = "*"
 ipython = "*"
