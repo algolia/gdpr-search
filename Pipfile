@@ -23,7 +23,7 @@ algoliasearch-django = "*"
 numeral = "*"
 python-binary-memcached = "*"
 django-bmemcached = "*"
-requests = "==2.21"
+requests = "==2.22.0"
 
 [dev-packages]
 
