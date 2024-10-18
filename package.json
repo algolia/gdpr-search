@@ -5,6 +5,9 @@
   "main": "index.js",
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "8.x"
+  },
   "scripts": {
     "build": "webpack --config webpack.config.js --progress --colors",
     "watch": "webpack --config webpack.config.js --watch",
