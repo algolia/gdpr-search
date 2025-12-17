@@ -4,7 +4,7 @@
 {% get_current_language as CURRENT_LANG %}
 
 {% block head %}
-    <link rel="canonical" href="{{ request.build_absolute_uri }}" />
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'article' id=article.index %}" />
     <meta name="theme-color" content="#2050e0">
 
     <meta property="og:locale" content="{{ CURRENT_LANG }}" />
@@ -12,7 +12,7 @@
     <meta property="og:title" content="{% if article.index != 1 %}{{ article.label }} | {% endif %}GDPR made searchable by Algolia. Chapters, articles and recitals easily readable"/>
     <meta property="og:description" content="Official text of GDPR–General Data Protection Regulation–made searchable by Algolia. Search Easily in chapters, articles and recitals to read faster and become GDPR compliant."/>
     <meta property='og:image' content='https://gdpr.algolia.com/static/img/GDPR-social-network-preview.jpg'>
-    <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{% url 'article' id=article.index %}" />
     <meta property="og:site_name" content="General Data Protection Regulation (GDPR)" />
 
     <meta name="twitter:card" content="summary" />
@@ -139,11 +139,11 @@
                             <img src="{% static 'img/ic-mail.svg' %}" alt="Email icon" width="14px">
                             <span class="share__label">Email</span>
                         </a>
-                        <a href="https://www.linkedin.com/shareArticle?url={{ request.build_absolute_uri }}&mini=true" class="share-link" target="_blank">
+                        <a href="https://www.linkedin.com/shareArticle?url=https://{{ request.get_host }}{% url 'article' id=article.index %}&mini=true" class="share-link" target="_blank">
                             <img src="{% static 'img/ic-linkedin.svg' %}" alt="LinkedIn icon" width="14px">
                             <span class="share__label">LinkedIn</span>
                         </a>
-                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}" class="share-link" target="_blank">
+                        <a href="https://twitter.com/intent/tweet?url=https://{{ request.get_host }}{% url 'article' id=article.index %}" class="share-link" target="_blank">
                             <img src="{% static 'img/ic-twitter.svg' %}" alt="Twitter icon" width="14px">
                             <span class="share__label">Twitter</span>
                         </a>
