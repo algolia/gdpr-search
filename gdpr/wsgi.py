@@ -42,15 +42,15 @@ try:
                                     base = path.split("/")[-1]
                                     web_path = "/static/bundles/" + base
                                     paths.append(web_path)
-                                    # Build assets entry keyed by path
-                                    assets_map[web_path] = [{"name": base, "path": web_path}]
+                                    # Build assets entry keyed by path - should be a dict not a list
+                                    assets_map[web_path] = {"name": base, "path": web_path}
                             normalized_chunks[name] = paths
                         else:
                             normalized_chunks[name] = chunk_list
                             # Build assets for string paths too
                             for p in chunk_list:
                                 if isinstance(p, str):
-                                    assets_map[p] = [{"name": p.split("/")[-1], "path": p}]
+                                    assets_map[p] = {"name": p.split("/")[-1], "path": p}
                 
                 if normalized_chunks:
                     assets["chunks"] = normalized_chunks
