@@ -12,62 +12,56 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gdpr.settings.prod")
 
-# Normalize webpack-stats.json BEFORE Django loads (so webpack-loader sees the fixed version)
+# Monkey-patch webpack_loader to handle dict-format chunks from webpack-bundle-tracker
 try:
     import json
-
-    stats_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "webpack-stats.json",
-    )
-    if os.path.exists(stats_path):
-        with open(stats_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        changed = False
-        needs_assets = False
+    from webpack_loader import loaders
+    
+    _original_get_assets = loaders.WebpackLoader.get_assets
+    
+    def _patched_get_assets(self, config=None):
+        """Normalize webpack-stats chunks to handle both dict and string formats"""
+        assets = _original_get_assets(self, config)
         
-        if (
-            isinstance(data, dict)
-            and "chunks" in data
-            and isinstance(data["chunks"], dict)
-        ):
-            new_chunks = {}
-            for name, chunks in data["chunks"].items():
-                # if chunks is a list of dicts with 'path' keys, convert to list of string paths
-                if isinstance(chunks, list) and chunks and isinstance(chunks[0], dict):
-                    out = []
-                    for c in chunks:
-                        p = c.get("path") or c.get("name")
-                        if p and isinstance(p, str):
-                            # Extract just the filename and construct web-relative path
-                            base = os.path.basename(p)
-                            # Always use /static/bundles/ for the web path
-                            out.append("/static/bundles/" + base)
-                    new_chunks[name] = out
-                    changed = True
-                    needs_assets = True
-                else:
-                    new_chunks[name] = chunks
-
-            if changed:
-                data["chunks"] = new_chunks
+        # Normalize chunks: convert dicts to strings and build assets mapping
+        if isinstance(assets, dict) and "chunks" in assets:
+            chunks = assets.get("chunks", {})
+            if isinstance(chunks, dict):
+                normalized_chunks = {}
+                assets_map = {}
                 
-                # django-webpack-loader 3.x expects an "assets" structure
-                # The loader looks up assets["assets"][chunk] where chunk is the path string
-                if needs_assets and "assets" not in data:
-                    data["assets"] = {"assets": {}}
-                    for name, paths in new_chunks.items():
-                        if isinstance(paths, list):
-                            for p in paths:
-                                # Create assets entry keyed by the chunk path
-                                data["assets"]["assets"][p] = [{"name": os.path.basename(p), "path": p}]
+                for name, chunk_list in chunks.items():
+                    if isinstance(chunk_list, list) and chunk_list:
+                        # Convert dict entries to path strings
+                        if isinstance(chunk_list[0], dict):
+                            paths = []
+                            for item in chunk_list:
+                                path = item.get("path") or item.get("name", "")
+                                if path:
+                                    # Use web-relative path
+                                    base = path.split("/")[-1]
+                                    web_path = "/static/bundles/" + base
+                                    paths.append(web_path)
+                                    # Build assets entry keyed by path
+                                    assets_map[web_path] = [{"name": base, "path": web_path}]
+                            normalized_chunks[name] = paths
+                        else:
+                            normalized_chunks[name] = chunk_list
+                            # Build assets for string paths too
+                            for p in chunk_list:
+                                if isinstance(p, str):
+                                    assets_map[p] = [{"name": p.split("/")[-1], "path": p}]
                 
-                try:
-                    with open(stats_path, "w", encoding="utf-8") as f:
-                        json.dump(data, f)
-                except Exception:
-                    pass
+                if normalized_chunks:
+                    assets["chunks"] = normalized_chunks
+                if assets_map:
+                    if "assets" not in assets:
+                        assets["assets"] = {}
+                    assets["assets"]["assets"] = assets_map
+        
+        return assets
+    
+    loaders.WebpackLoader.get_assets = _patched_get_assets
 except Exception:
     pass
 
