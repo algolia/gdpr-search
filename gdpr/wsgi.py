@@ -100,12 +100,14 @@ try:
                 data["chunks"] = new_chunks
                 
                 # django-webpack-loader 3.x expects an "assets" structure
+                # The loader looks up assets["assets"][chunk] where chunk is the path string
                 if needs_assets and "assets" not in data:
-                    data["assets"] = {}
+                    data["assets"] = {"assets": {}}
                     for name, paths in new_chunks.items():
-                        if isinstance(paths, list) and paths:
-                            # Create assets entry for the chunk name
-                            data["assets"][name] = [{"name": os.path.basename(p), "path": p} for p in paths]
+                        if isinstance(paths, list):
+                            for p in paths:
+                                # Create assets entry keyed by the chunk path
+                                data["assets"]["assets"][p] = [{"name": os.path.basename(p), "path": p}]
                 
                 try:
                     with open(stats_path, "w", encoding="utf-8") as f:
