@@ -55,9 +55,7 @@ try:
                 if normalized_chunks:
                     assets["chunks"] = normalized_chunks
                 if assets_map:
-                    if "assets" not in assets:
-                        assets["assets"] = {}
-                    assets["assets"]["assets"] = assets_map
+                    assets["assets"] = assets_map
         
         return assets
     
