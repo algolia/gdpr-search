@@ -25,11 +25,17 @@ try:
 
         def is_immutable_file(self, path, url):
             from django.conf import settings
+
             try:
-                is_immutable = super(DjangoCompressorWhiteNoise, self).is_immutable_file(path, url)
+                is_immutable = super(
+                    DjangoCompressorWhiteNoise, self
+                ).is_immutable_file(path, url)
             except Exception:
                 is_immutable = False
-            if not is_immutable and getattr(settings, 'COMPRESS_OUTPUT_DIR', None) in url:
+            if (
+                not is_immutable
+                and getattr(settings, "COMPRESS_OUTPUT_DIR", None) in url
+            ):
                 return True
             return is_immutable
 
@@ -39,10 +45,13 @@ except Exception:
 
     class DjangoCompressorWhiteNoise(_DjangoWhiteNoise):
         def is_immutable_file(self, path, url):
-            is_immutable = super(DjangoCompressorWhiteNoise, self).is_immutable_file(path, url)
+            is_immutable = super(DjangoCompressorWhiteNoise, self).is_immutable_file(
+                path, url
+            )
             if not is_immutable:
                 from django.conf import settings
-                if getattr(settings, 'COMPRESS_OUTPUT_DIR', None) in url:
+
+                if getattr(settings, "COMPRESS_OUTPUT_DIR", None) in url:
                     return True
             return is_immutable
 
