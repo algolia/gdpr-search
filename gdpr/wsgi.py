@@ -19,9 +19,9 @@ try:
     
     _original_get_assets = loaders.WebpackLoader.get_assets
     
-    def _patched_get_assets(self, config=None):
+    def _patched_get_assets(self):
         """Normalize webpack-stats chunks to handle both dict and string formats"""
-        assets = _original_get_assets(self, config)
+        assets = _original_get_assets(self)
         
         # Normalize chunks: convert dicts to strings and build assets mapping
         if isinstance(assets, dict) and "chunks" in assets:
