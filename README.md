@@ -10,7 +10,7 @@ This is the repository of the https://gdpr.algolia.com/ website.
     * [`yarn`](https://yarnpkg.com/lang/en/docs/install/): `brew install yarn`
     * [`psql`](https://www.postgresql.org/): `brew install postgresql`
 3. Install the dependencies:
-    * Python: `pipenv install --python 3.6`
+    * Python: `pipenv install --python 3.9`
     * JS: `yarn install`
 4. Setup the database and the env variables:
     * `createdb gdprsearch`
