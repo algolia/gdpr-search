@@ -1,4 +1,17 @@
 {
   "status": "done",
-  "chunks": { "search": ["/static/bundles/search-e5e843ca5d4e39fd42dd.js"] }
+  "chunks": {
+    "search": [
+      "/static/bundles/search-e5e843ca5d4e39fd42dd.js",
+      "/static/bundles/search-b7adf4a192f629395f9b.js"
+    ]
+  },
+  "assets": {
+    "assets": {
+      "search": { "js": "/static/bundles/search-e5e843ca5d4e39fd42dd.js" },
+      "search-b7adf4a192f629395f9b.js": {
+        "js": "/static/bundles/search-b7adf4a192f629395f9b.js"
+      }
+    }
+  }
 }
