@@ -11,29 +11,40 @@ import os
 from whitenoise.django import DjangoWhiteNoise
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.prod")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gdpr.settings.prod")
 
 
-class DjangoCompressorWhiteNoise(DjangoWhiteNoise):
-    """A sub-class of DjangoWhiteNoise to play nice with django compressor.
+# Make whitenoise import compatible with older and newer versions.
+try:
+    # whitenoise 4+ exposes WhiteNoise at top-level
+    from whitenoise import WhiteNoise
 
-    DjangoWhiteNoise by-default doesn't add forever caching headers on the files
-    generated with django-compressor as it doen't treat them as immutable. See
-    original implementation of `is_immutable_file` for more details.
-    """
+    class DjangoCompressorWhiteNoise(WhiteNoise):
+        def __init__(self, app):
+            super(DjangoCompressorWhiteNoise, self).__init__(app)
 
-    def is_immutable_file(self, path, url):
-        """Determine whether given URL represents an immutable file.
-
-        Adds a rule to the default implementation so that all the files in the
-        COMPRESS_OUTPUT_DIR are recognized as immutable as well.
-        """
-        is_immutable = super(DjangoCompressorWhiteNoise, self).is_immutable_file(path, url)
-        if not is_immutable:
+        def is_immutable_file(self, path, url):
             from django.conf import settings
-            if settings.COMPRESS_OUTPUT_DIR in url:
+            try:
+                is_immutable = super(DjangoCompressorWhiteNoise, self).is_immutable_file(path, url)
+            except Exception:
+                is_immutable = False
+            if not is_immutable and getattr(settings, 'COMPRESS_OUTPUT_DIR', None) in url:
                 return True
-        return is_immutable
+            return is_immutable
+
+except Exception:
+    # Fallback for older whitenoise versions that provide DjangoWhiteNoise
+    from whitenoise.django import DjangoWhiteNoise as _DjangoWhiteNoise
+
+    class DjangoCompressorWhiteNoise(_DjangoWhiteNoise):
+        def is_immutable_file(self, path, url):
+            is_immutable = super(DjangoCompressorWhiteNoise, self).is_immutable_file(path, url)
+            if not is_immutable:
+                from django.conf import settings
+                if getattr(settings, 'COMPRESS_OUTPUT_DIR', None) in url:
+                    return True
+            return is_immutable
 
 
 application = DjangoCompressorWhiteNoise(get_wsgi_application())
