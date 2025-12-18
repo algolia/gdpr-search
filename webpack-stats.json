@@ -1,1 +1,4 @@
-{"status":"done","chunks":{"search":[{"name":"search-bb6a47426d57c56a201e.js","path":"/Users/clement/Projects/gdpr/gdpr/static/bundles/search-bb6a47426d57c56a201e.js"}]}}
+{
+  "status": "done",
+  "chunks": { "search": ["/static/bundles/search-e5e843ca5d4e39fd42dd.js"] }
+}
