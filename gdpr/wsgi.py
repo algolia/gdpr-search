@@ -71,6 +71,8 @@ try:
             data = json.load(f)
 
         changed = False
+        needs_assets = False
+        
         if (
             isinstance(data, dict)
             and "chunks" in data
@@ -84,19 +86,27 @@ try:
                     for c in chunks:
                         p = c.get("path") or c.get("name")
                         if p and isinstance(p, str):
-                            # prefer a web-relative bundle path when possible
+                            # Extract just the filename and construct web-relative path
                             base = os.path.basename(p)
-                            if "static" in p and "bundles" in p:
-                                out.append("/static/bundles/" + base)
-                            else:
-                                out.append(p)
+                            # Always use /static/bundles/ for the web path
+                            out.append("/static/bundles/" + base)
                     new_chunks[name] = out
                     changed = True
+                    needs_assets = True
                 else:
                     new_chunks[name] = chunks
 
             if changed:
                 data["chunks"] = new_chunks
+                
+                # django-webpack-loader 3.x expects an "assets" structure
+                if needs_assets and "assets" not in data:
+                    data["assets"] = {}
+                    for name, paths in new_chunks.items():
+                        if isinstance(paths, list) and paths:
+                            # Create assets entry for the chunk name
+                            data["assets"][name] = [{"name": os.path.basename(p), "path": p} for p in paths]
+                
                 try:
                     with open(stats_path, "w", encoding="utf-8") as f:
                         json.dump(data, f)
